@@ -1,0 +1,2 @@
+# FrankBussRackPlugin
+VCV Rack Plugin
