@@ -57,7 +57,7 @@ struct FrankBussFormulaModule : Module {
 	bool doclamp = true;
 	bool freqFormulaEnabled = false;
 	float radiobutton = 0.0f;
-	float phase = 0.0f;
+	float phase[PORT_MAX_CHANNELS];
 
 	dsp::SchmittTrigger clampTrigger;
 	dsp::SchmittTrigger bMinus1Trigger;
@@ -88,6 +88,15 @@ struct FrankBussFormulaModule : Module {
 		configParam(FrankBussFormulaModule::KNOB_PARAM, -1.0f, 1.0f, 0.0f, "");
 		configParam(FrankBussFormulaModule::CLAMP_PARAM, 0.0f, 1.0f, 0.0f, "");
 	}
+	
+	int getMaxChannels() {
+		int channels = inputs[W_INPUT].getChannels();
+		channels = max(channels, inputs[X_INPUT].getChannels());
+		channels = max(channels, inputs[Y_INPUT].getChannels());
+		channels = max(channels, inputs[Z_INPUT].getChannels());
+		if (channels == 0) channels = 1;
+		return channels;
+	}
 
 	void process(const ProcessArgs &args) override {
 		if (clampTrigger.process(params[CLAMP_PARAM].getValue())) {
@@ -106,10 +115,7 @@ struct FrankBussFormulaModule : Module {
 		float deltaTime = args.sampleTime;
 
 		// evaluate frequency and output formula
-		int channels = inputs[W_INPUT].getChannels();
-		channels = max(channels, inputs[X_INPUT].getChannels());
-		channels = max(channels, inputs[Y_INPUT].getChannels());
-		channels = max(channels, inputs[Z_INPUT].getChannels());
+		int channels = getMaxChannels();
 		if (compiled) {
 			for (int c = 0; c < channels; c++) {
 				try {
@@ -123,7 +129,7 @@ struct FrankBussFormulaModule : Module {
 					float k = params[KNOB_PARAM].getValue();
 
 					// set all variables
-					*formulaP = phase;
+					*formulaP = phase[c];
 					*formulaK = k;
 					*formulaB = radiobutton;
 					*formulaW = w;
@@ -132,7 +138,7 @@ struct FrankBussFormulaModule : Module {
 					*formulaZ = z;
 
 					if (freqFormulaEnabled) {
-						*freqFormulaP = phase;
+						*freqFormulaP = phase[c];
 						*freqFormulaK = k;
 						*freqFormulaB = radiobutton;
 						*freqFormulaW = w;
@@ -140,8 +146,8 @@ struct FrankBussFormulaModule : Module {
 						*freqFormulaY = y;
 						*freqFormulaZ = z;
 						float freq = evalFormula(freqFormula);
-						phase += freq * args.sampleTime;
-						if (phase > 1.0f) phase -= 1.0f;
+						phase[c] += freq * args.sampleTime;
+						if (phase[c] > 1.0f) phase[c] -= 1.0f;
 					}
 					float val = evalFormula(formula);
 					if (doclamp) val = clamp(val, -5.0f, 5.0f);
@@ -203,7 +209,7 @@ struct FrankBussFormulaModule : Module {
 	void onAdd() override
 	{
 		compiled = false;
-		phase = 0;
+		for (int c = 0; c < PORT_MAX_CHANNELS; c++) phase[c] = 0;
 		if (textField->text.size() > 0) {
 			try {
 				parseFormula(formula, textField->text);
