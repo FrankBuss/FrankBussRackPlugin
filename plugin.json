@@ -5,10 +5,10 @@
    "name":"Frank Buss",
    "author":"Frank Buss",
    "authorEmail":"fb@frank-buss.de",
-   "pluginUrl":"https://github.com/FrankBuss/Formula/blob/master/README.md",
+   "pluginUrl":"https://github.com/FrankBuss/FrankBussRackPlugin/blob/master/README.md",
    "authorUrl":"http://www.frank-buss.de",
-   "manualUrl":"https://github.com/FrankBuss/Formula/blob/master/README.md",
-   "sourceUrl":"https://github.com/FrankBuss/Formula",
+   "manualUrl":"https://github.com/FrankBuss/FrankBussRackPlugin/blob/master/README.md",
+   "sourceUrl":"https://github.com/FrankBuss/FrankBussRackPlugin",
    "modules":[  
       {  
          "slug":"Formula",
