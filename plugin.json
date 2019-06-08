@@ -8,7 +8,7 @@
    "pluginUrl":"https://github.com/FrankBuss/FrankBussRackPlugin/blob/master/README.md",
    "authorUrl":"http://www.frank-buss.de",
    "manualUrl":"https://github.com/FrankBuss/FrankBussRackPlugin/blob/master/README.md",
-   "sourceUrl":"https://github.com/FrankBuss/FrankBussRackPlugin",
+   "sourceUrl":"https://github.com/FrankBuss/FrankBussRackPlugin.git",
    "modules":[  
       {  
          "slug":"Formula",

@@ -125,7 +125,7 @@ input `x`, but would allow a fine adjustment with the knob.
 
 The following functions are implemented:
 
-acos, asin, atan, atan2, cos, cosh, exp, fabs, fmod, log, log2, log10, pow, sin,
+acos, asin, atan, atan2, cos, cosh, exp, abs, mod, log, log2, log10, pow, sin,
 sinh, tan, tanh, sqrt, ceil, floor, max, and min. See here for a detailed
 description of each function: http://www.cplusplus.com/reference/cmath/
 
