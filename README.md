@@ -170,3 +170,8 @@ and replace it with these lines:
       "version": "1.0.0",
       "model": "Formula",
 ```
+If you have Perl installed (free for all operating systems), you can enter these 2 lines from a console to convert all your .vcv files in the current directoy:
+```
+perl -i -pe 's/"plugin": "FrankBussFormula"/"plugin": "FrankBuss"/g' *.vcv
+perl -i -pe 's/"model": "FrankBussFormula"/"model": "Formula"/g' *.vcv
+```
