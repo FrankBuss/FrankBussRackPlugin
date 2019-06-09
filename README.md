@@ -161,13 +161,11 @@ plotter as another example: http://www.frank-buss.de/formula/index.html
 If you have a patch file which uses the old FrankBussFormula plugin, you have to rename the internal name. Open your vcv file in an editor and search for these lines:
 ```
       "plugin": "FrankBussFormula",
-      "version": "0.6.2",
       "model": "FrankBussFormula",
 ```
 and replace it with these lines:
 ```
       "plugin": "FrankBuss",
-      "version": "1.0.0",
       "model": "Formula",
 ```
 If you have Perl installed (free for all operating systems), you can enter these 2 lines from a console to convert all your .vcv files in the current directoy:
