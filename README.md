@@ -156,3 +156,17 @@ real-exponent = [e|E] [+|-] [0-9]+
 
 I wrote the formula library in 2001, here is the original page with a function
 plotter as another example: http://www.frank-buss.de/formula/index.html
+
+# Porting old FrankBussFormula .vcv files to the new plugin
+If you have a patch file which uses the old FrankBussFormula plugin, you have to rename the internal name. Open your vcv file in an editor and search for these lines:
+```
+      "plugin": "FrankBussFormula",
+      "version": "0.6.2",
+      "model": "FrankBussFormula",
+```
+and replace it with these lines:
+```
+      "plugin": "FrankBuss",
+      "version": "1.0.0",
+      "model": "Formula",
+```
