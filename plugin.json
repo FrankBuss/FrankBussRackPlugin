@@ -15,7 +15,8 @@
          "name":"Formula",
          "description":"Formula for CV and audio",
          "tags":[  
-            "Utility"
+            "Utility",
+            "Polyphonic"
          ]
       },
       {  
@@ -24,6 +25,15 @@
          "description":"Lua scripting",
          "tags":[  
             "Utility"
+         ]
+      },
+      {  
+         "slug":"FB15",
+         "name":"FB-15",
+         "description":"A polyphonic analog synthesizer",
+         "tags":[  
+            "Synth voice",
+            "Polyphonic"
          ]
       }
    ]
