@@ -88,6 +88,7 @@ struct FrankBussShakerWidget : ModuleWidget {
 		bool zoomCable = module->inputs[FrankBussShakerModule::ZOOM_INPUT].active;
 		if (APP->engine->isPaused() || !on || (zoomChanged && zoomCable)) {
 			offsetOrg = APP->scene->rackScroll->offset;
+			exitOffset = offsetOrg;
 			exitZoom = settings::zoom;
 			module->params[FrankBussShakerModule::ON_PARAM].setValue(0);
 			return;
@@ -96,6 +97,7 @@ struct FrankBussShakerWidget : ModuleWidget {
 		// reset initialized position when turned on
 		if (on && !lastOn) {
 			offsetOrg = APP->scene->rackScroll->offset;
+			exitOffset = offsetOrg;
 		}
 		lastOn = on;
 		
