@@ -36,11 +36,17 @@ struct FrankBussShakerWidget : ModuleWidget {
 		addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 		addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 
-		addInput(createInput<PJ301MPort>(Vec(20, 140), module, FrankBussShakerModule::TENSION_INPUT));
-		addInput(createInput<PJ301MPort>(Vec(20, 180), module, FrankBussShakerModule::OPACITY_INPUT));
-		addInput(createInput<PJ301MPort>(Vec(20, 220), module, FrankBussShakerModule::ZOOM_INPUT));
-		addInput(createInput<PJ301MPort>(Vec(20, 260), module, FrankBussShakerModule::X_POS_INPUT));
-		addInput(createInput<PJ301MPort>(Vec(20, 300), module, FrankBussShakerModule::Y_POS_INPUT));
+		int y0 = 130;
+		int ofs = 33;
+		addInput(createInput<PJ301MPort>(Vec(15, y0), module, FrankBussShakerModule::TENSION_INPUT));
+		y0 += ofs;
+		addInput(createInput<PJ301MPort>(Vec(15, y0), module, FrankBussShakerModule::OPACITY_INPUT));
+		y0 += ofs;
+		addInput(createInput<PJ301MPort>(Vec(15, y0), module, FrankBussShakerModule::ZOOM_INPUT));
+		y0 += ofs;
+		addInput(createInput<PJ301MPort>(Vec(15, y0), module, FrankBussShakerModule::X_POS_INPUT));
+		y0 += ofs;
+		addInput(createInput<PJ301MPort>(Vec(15, y0), module, FrankBussShakerModule::Y_POS_INPUT));
 	}
 
 	math::Vec lastOffset;
