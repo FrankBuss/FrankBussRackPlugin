@@ -286,7 +286,7 @@ struct FrankBussFormulaWidget : ModuleWidget {
 	FrankBussFormulaWidget(FrankBussFormulaModule *module) {
 		setModule(module);
 
-		setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/MyModule.svg")));
+		setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/formula.svg")));
 
 		addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
 		addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
@@ -333,9 +333,4 @@ struct FrankBussFormulaWidget : ModuleWidget {
 
 };
 
-
-// Specify the Module and ModuleWidget subclass, human-readable
-// author name for categorization per pluginInstance, module slug (should never
-// change), human-readable module name, and any number of tags
-// (found in `include/tags.hpp`) separated by commas.
 Model *modelFrankBussFormula = createModel<FrankBussFormulaModule, FrankBussFormulaWidget>("Formula");

@@ -15,7 +15,16 @@
          "name":"Formula",
          "description":"Formula for CV and audio",
          "tags":[  
-            "Utility"
+            "Utility",
+            "Polyphonic"
+         ]
+      },
+      {  
+         "slug":"Shaker",
+         "name":"Shaker",
+         "description":"Shakes your Rack",
+         "tags":[  
+            "Visual"
          ]
       }
    ]

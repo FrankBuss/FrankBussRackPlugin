@@ -8,3 +8,4 @@ extern Plugin *pluginInstance;
 
 // Forward-declare each Model, defined in each module source file
 extern Model *modelFrankBussFormula;
+extern Model *modelFrankBussShaker;
