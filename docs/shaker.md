@@ -1,6 +1,6 @@
 # Shaker
 
-Shake your Rack. This plugin can modulate the cable tension, opacity, the
+Shake your Rack. This module can modulate the cable tension, opacity, the
 zoom factor and the scroll position of your rack.
 
 ![alt text](shaker.png "Shaker")

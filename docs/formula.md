@@ -2,7 +2,7 @@
 
 A formula module for VCV Rack, by Frank Buss, based on BokontepByteBeatMachine.
 
-This plugin provides 4 inputs: w, x, y and z. In the text field you can write a
+This module provides 4 inputs: w, x, y and z. In the text field you can write a
 formula for the output. For example `x+y` would be a simple adder.
 
 ![alt text](add.png "Add example")
