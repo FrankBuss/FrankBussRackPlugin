@@ -6,6 +6,10 @@
 struct FrankBussShakerModule;
 
 struct FrankBussShakerModule : Module {
+	enum ParamIds {
+		ON_PARAM,
+		NUM_PARAMS
+	};
 	enum InputIds {
 		TENSION_INPUT,
 		OPACITY_INPUT,
@@ -16,7 +20,8 @@ struct FrankBussShakerModule : Module {
 	};
 
 	FrankBussShakerModule() {
-		config(0, NUM_INPUTS, 0, 0);
+		config(NUM_PARAMS, NUM_INPUTS, 0, 0);
+		configParam(ON_PARAM, 0.f, 1.f, 1.f, "On/Off");
 	}
 
 	/*
@@ -36,6 +41,7 @@ struct FrankBussShakerWidget : ModuleWidget {
 		addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 		addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 
+		addParam(createParam<CKSS>(Vec(15, 60), module, FrankBussShakerModule::ON_PARAM));
 		int y0 = 130;
 		int ofs = 33;
 		addInput(createInput<PJ301MPort>(Vec(15, y0), module, FrankBussShakerModule::TENSION_INPUT));
@@ -47,26 +53,52 @@ struct FrankBussShakerWidget : ModuleWidget {
 		addInput(createInput<PJ301MPort>(Vec(15, y0), module, FrankBussShakerModule::X_POS_INPUT));
 		y0 += ofs;
 		addInput(createInput<PJ301MPort>(Vec(15, y0), module, FrankBussShakerModule::Y_POS_INPUT));
+		
+		// always turn it off on load
+		if (module) module->params[FrankBussShakerModule::ON_PARAM].setValue(0);
 	}
 
 	math::Vec lastOffset;
+	math::Vec exitOffset;
 	math::Vec offsetOrg;
 	float lastTension = 0;
 	float lastOpacity = 0;
 	float lastZoom = 0;
 	float lastXPos = 0;
 	float lastYPos = 0;
+	bool lastOn = false;
 	int initialized = 0;
+	float exitZoom = 0;
 	
 	void step() override {
 		ModuleWidget::step();
 		if (!module) return;
-		if (APP->engine->isPaused()) {
-			// reset initialized position when paused
-			offsetOrg = APP->scene->rackScroll->offset;
-			return;
+
+		// change original position, if user moved it manually
+		if (exitOffset.x != APP->scene->rackScroll->offset.x) {
+			offsetOrg.x += APP->scene->rackScroll->offset.x - exitOffset.x;
+		}
+		if (exitOffset.y != APP->scene->rackScroll->offset.y) {
+			offsetOrg.y += APP->scene->rackScroll->offset.y - exitOffset.y;
 		}
 
+		// reset initialized position when engine is paused, off, or zoom changed (when a cable is connected to it), and stop it
+		bool on = module->params[FrankBussShakerModule::ON_PARAM].getValue() > 0.f;
+		bool zoomChanged = exitZoom != settings::zoom;
+		bool zoomCable = module->inputs[FrankBussShakerModule::ZOOM_INPUT].active;
+		if (APP->engine->isPaused() || !on || (zoomChanged && zoomCable)) {
+			offsetOrg = APP->scene->rackScroll->offset;
+			exitZoom = settings::zoom;
+			module->params[FrankBussShakerModule::ON_PARAM].setValue(0);
+			return;
+		}
+		
+		// reset initialized position when turned on
+		if (on && !lastOn) {
+			offsetOrg = APP->scene->rackScroll->offset;
+		}
+		lastOn = on;
+		
 		// test tension changes
 		float tension = module->inputs[FrankBussShakerModule::TENSION_INPUT].getVoltage(0);
 		if (module->inputs[FrankBussShakerModule::TENSION_INPUT].active) {
@@ -101,12 +133,13 @@ struct FrankBussShakerWidget : ModuleWidget {
 		if (!module->inputs[FrankBussShakerModule::Y_POS_INPUT].active) y = lastYPos;
 		if (x != lastXPos || y != lastYPos) {
 			// init it once after some time
+			/*
 			if (initialized < 10) {
 				offsetOrg = APP->scene->rackScroll->offset;
 				lastOffset = offsetOrg;
 				initialized++;
 				return;
-			}
+			}*/
 
 			// calculate and set new position
 			math::Vec newOffset = offsetOrg;
@@ -120,6 +153,9 @@ struct FrankBussShakerWidget : ModuleWidget {
 			lastXPos = x;
 			lastYPos = y;
 		}
+		
+		exitZoom = settings::zoom;
+		exitOffset = APP->scene->rackScroll->offset;
 	}
 	
 };

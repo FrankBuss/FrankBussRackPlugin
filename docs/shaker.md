@@ -19,7 +19,13 @@ to the range -2 to +2. The formula used by Rack to calculate the
 zoom factor is 2^n. So for an input voltage of 0 V, the zoom factor
 is 1, or 100%. For -10 V it is 25% and for +10 V it is 400%.
 
-If your rack is zooming like crazy and you can't stop it, go to the
+You can start and stop the effect with the on/off button. If a cable is connected
+to the zoom input, you can also stop the effect by manually zooming,
+for example by holding down the ctrl-key and moving the mouse wheel.
+
+If your rack is zooming or moving like crazy and you can't stop it, go to the
 menu `Engine->Sample Rate->Pause`:
 	
 ![alt text](engine-pause.png "Engine pause")
+
+This sets the on/off button to the off position as well.
