@@ -121,6 +121,15 @@ input `x`, but would allow a fine adjustment with the knob.
 
 ![alt text](quantizer.png "Quantizer")
 
+# Sawtooth generator and waveform transformations
+
+Some more examples of a simple sawtooth generator with adjustable frequency and simple
+waveform transformations. Works with 0-5V CV and might be useful for example to shape
+ADSR curves. But works with audio as well, just shift and scale the input to 0-5V and
+then back again to the desired output level and offset.
+
+![alt text](waveform-transformations.png "Waveform transformations")
+
 # The geeky details
 
 The following functions are implemented:
