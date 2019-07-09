@@ -9,6 +9,7 @@
    "authorUrl":"http://www.frank-buss.de",
    "manualUrl":"https://github.com/FrankBuss/FrankBussRackPlugin/blob/master/README.md",
    "sourceUrl":"https://github.com/FrankBuss/FrankBussRackPlugin.git",
+   "donateUrl": "https://www.paypal.me/frankbuss",
    "modules":[  
       {  
          "slug":"Formula",
