@@ -1,9 +1,4 @@
-#include <app/Scene.hpp>
-#include <app/RackScrollWidget.hpp>
-#include <settings.hpp>
 #include "FrankBuss.hpp"
-
-struct FrankBussShakerModule;
 
 struct FrankBussShakerModule : Module {
 	enum ParamIds {
@@ -21,13 +16,13 @@ struct FrankBussShakerModule : Module {
 
 	FrankBussShakerModule() {
 		config(NUM_PARAMS, NUM_INPUTS, 0, 0);
-		configParam(ON_PARAM, 0.f, 1.f, 1.f, "On/Off");
+		configSwitch(ON_PARAM, 0, 1, 1, "Shaker", {"Off", "On"});
+		configInput(TENSION_INPUT, "Tension");
+		configInput(OPACITY_INPUT, "Opacity");
+		configInput(ZOOM_INPUT, "Zoom");
+		configInput(X_POS_INPUT, "X-pos");
+		configInput(Y_POS_INPUT, "Y-pos");
 	}
-
-	/*
-	void process(const ProcessArgs &args) override {
-	}
-	*/
 };
 
 struct FrankBussShakerWidget : ModuleWidget {
@@ -84,12 +79,12 @@ struct FrankBussShakerWidget : ModuleWidget {
 
 		// reset initialized position when engine is paused, off, or zoom changed (when a cable is connected to it), and stop it
 		bool on = module->params[FrankBussShakerModule::ON_PARAM].getValue() > 0.f;
-		bool zoomChanged = exitZoom != settings::zoom;
+		bool zoomChanged = exitZoom != APP->scene->rackScroll->getZoom();
 		bool zoomCable = module->inputs[FrankBussShakerModule::ZOOM_INPUT].active;
-		if (APP->engine->isPaused() || !on || (zoomChanged && zoomCable)) {
+		if (/*APP->engine->isPaused() ||*/ !on || (zoomChanged && zoomCable)) {
 			offsetOrg = APP->scene->rackScroll->offset;
 			exitOffset = offsetOrg;
-			exitZoom = settings::zoom;
+			exitZoom = APP->scene->rackScroll->getZoom();
 			module->params[FrankBussShakerModule::ON_PARAM].setValue(0);
 			return;
 		}
@@ -123,7 +118,7 @@ struct FrankBussShakerWidget : ModuleWidget {
 		float zoom = module->inputs[FrankBussShakerModule::ZOOM_INPUT].getVoltage(0);
 		if (module->inputs[FrankBussShakerModule::ZOOM_INPUT].active) {
 			if (zoom != lastZoom) {
-				settings::zoom = math::clamp(zoom / 5.0f, -2.0f, 2.0f);
+				APP->scene->rackScroll->setZoom(math::clamp(zoom / 5.0f, -2.0f, 2.0f));
 				lastZoom = zoom;
 			}
 		}
@@ -156,7 +151,7 @@ struct FrankBussShakerWidget : ModuleWidget {
 			lastYPos = y;
 		}
 		
-		exitZoom = settings::zoom;
+		exitZoom = APP->scene->rackScroll->getZoom();
 		exitOffset = APP->scene->rackScroll->offset;
 	}
 	
