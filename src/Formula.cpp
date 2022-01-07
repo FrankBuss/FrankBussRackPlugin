@@ -1,20 +1,6 @@
 #include "FrankBuss.hpp"
 #include "formula/Formula.h"
 
-struct FrankBussFormulaModule;
-
-class MyTextField : public LedDisplayTextField {
-public:
-	MyTextField() : LedDisplayTextField() {}
-	void setModule(FrankBussFormulaModule* _module) {
-		module = _module;
-	}
-    virtual void onChange(const event::Change &e) override;
-
-private:
-	FrankBussFormulaModule* module;
-};
-
 struct FrankBussFormulaModule : Module {
 	enum ParamIds {
 		X_PARAM,
@@ -39,7 +25,8 @@ struct FrankBussFormulaModule : Module {
 		NUM_OUTPUTS
 	};
 	enum LightIds {
-		BLINK_LIGHT,
+		ERROR_LIGHT,
+		OK_LIGHT,
 		CLAMP_LIGHT,
 		B_MINUS_1_LIGHT,
 		B_0_LIGHT,
@@ -47,13 +34,15 @@ struct FrankBussFormulaModule : Module {
 		NUM_LIGHTS
 	};
 
-	MyTextField* textField;
-	MyTextField* freqField;
+	std::string textField;
+	std::string freqField;
 	float blinkPhase = 0.0f;
 
 	Formula formula;
 	Formula freqFormula;
 	bool compiled = false;
+	bool textDirty = false;
+	bool freqDirty = false;
 	bool doclamp = true;
 	bool freqFormulaEnabled = false;
 	float radiobutton = 0.0f;
@@ -82,11 +71,23 @@ struct FrankBussFormulaModule : Module {
 
 	FrankBussFormulaModule() {
 		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
-		configParam(FrankBussFormulaModule::B_MINUS_1_PARAM, 0.0f, 1.0f, 0.0f, "");
-		configParam(FrankBussFormulaModule::B_0_PARAM, 0.0f, 1.0f, 0.0f, "");
-		configParam(FrankBussFormulaModule::B_1_PARAM, 0.0f, 1.0f, 0.0f, "");
-		configParam(FrankBussFormulaModule::KNOB_PARAM, -1.0f, 1.0f, 0.0f, "");
-		configParam(FrankBussFormulaModule::CLAMP_PARAM, 0.0f, 1.0f, 0.0f, "");
+		// configParam(FrankBussFormulaModule::B_MINUS_1_PARAM, 0.0f, 1.0f, 0.0f, "");
+		// configParam(FrankBussFormulaModule::B_0_PARAM, 0.0f, 1.0f, 0.0f, "");
+		// configParam(FrankBussFormulaModule::B_1_PARAM, 0.0f, 1.0f, 0.0f, "");
+		configButton(B_MINUS_1_PARAM, "Variable 'b': -1");
+		configButton(B_0_PARAM, "Variable 'b': 0");
+		configButton(B_1_PARAM, "Variable 'b': 1");
+		configParam(FrankBussFormulaModule::KNOB_PARAM, -1.0f, 1.0f, 0.0f, "Variable 'k'");
+		// configParam(FrankBussFormulaModule::CLAMP_PARAM, 0.0f, 1.0f, 0.0f, "");
+		configButton(CLAMP_PARAM, "Clamp to -5V/+5V");
+		
+		configLight(ERROR_LIGHT, "Status:\n  green light: ok\n  red blinking light: error\n  -------------------------------\n ");
+		
+		configInput(X_INPUT, "Variable 'x'");
+		configInput(Y_INPUT, "Variable 'y'");
+		configInput(Z_INPUT, "Variable 'z'");
+		configInput(W_INPUT, "Variable 'w'");
+		configOutput(FORMULA_OUTPUT, "Result");
 	}
 	
 	int getMaxChannels() {
@@ -173,9 +174,11 @@ struct FrankBussFormulaModule : Module {
 		if (blinkPhase >= 1.0f)
 			blinkPhase -= 1.0f;
 		if (compiled) {
-			lights[BLINK_LIGHT].value = 1.0f;
+			lights[OK_LIGHT].value = 0;
+			lights[ERROR_LIGHT].value = 1;
 		} else {
-			lights[BLINK_LIGHT].value = (blinkPhase < 0.5f) ? 1.0f : 0.0f;
+			lights[OK_LIGHT].value = (blinkPhase < 0.5f) ? 1.0f : 0.0f;
+			lights[ERROR_LIGHT].value = 0;
 		}
 
 		lights[CLAMP_LIGHT].value = (doclamp);
@@ -206,16 +209,16 @@ struct FrankBussFormulaModule : Module {
 		return val;
 	}
 
-	void onAdd() override
+	void compile()
 	{
 		compiled = false;
 		for (int c = 0; c < PORT_MAX_CHANNELS; c++) phase[c] = 0;
-		if (textField->text.size() > 0) {
+		if (textField.size() > 0) {
 			try {
-				parseFormula(formula, textField->text);
+				parseFormula(formula, textField);
 				freqFormulaEnabled = false;
-				if (freqField->text.size() > 0) {
-					parseFormula(freqFormula, freqField->text);
+				if (freqField.size() > 0) {
+					parseFormula(freqFormula, freqField);
 					freqFormulaEnabled = true;
 				}
 				
@@ -244,28 +247,39 @@ struct FrankBussFormulaModule : Module {
 		}
 	}
 
-	void onReset () override
+	// void onAdd(const AddEvent &e) override
+	// {
+		// textField = "";
+		// freqField = "";
+		// compile();
+		// dirty = true;
+	// }
+
+	void onReset (const ResetEvent &e) override
 	{
-		onAdd();
+		textField = "";
+		freqField = "";
+		compile();
+		textDirty = true;
+		freqDirty = true;
 	}
 
 	json_t *dataToJson() override {
 		json_t *rootJ = json_object();
 
-		json_object_set_new(rootJ, "text", json_string(textField->text.c_str()));
-		json_object_set_new(rootJ, "freq", json_string(freqField->text.c_str()));
+		json_object_set_new(rootJ, "text", json_string(textField.c_str()));
+		json_object_set_new(rootJ, "freq", json_string(freqField.c_str()));
 		json_object_set_new(rootJ, "clamp", json_boolean(doclamp));
 		json_object_set_new(rootJ, "button", json_real(radiobutton));
-
 		return rootJ;
 	}
 
 	void dataFromJson(json_t *rootJ) override {
 		json_t *textJ = json_object_get(rootJ, "text");
-		if (textJ) textField->text = json_string_value(textJ);
+		if (textJ) textField = json_string_value(textJ);
 
 		json_t *freqJ = json_object_get(rootJ, "freq");
-		if (freqJ) freqField->text = json_string_value(freqJ);
+		if (freqJ) freqField = json_string_value(freqJ);
 
 		json_t *clampJ = json_object_get(rootJ, "clamp");
 		if (clampJ) doclamp = json_is_true(clampJ);
@@ -273,16 +287,63 @@ struct FrankBussFormulaModule : Module {
 		json_t *buttonJ = json_object_get(rootJ, "button");
 		if (buttonJ) radiobutton = json_real_value(buttonJ);
 
-		onAdd();
+		compile();
+		textDirty = true;
+		freqDirty = true;
 	}
 
 };
 
-void MyTextField::onChange(const event::Change&) {
-	if (module) module->onAdd();
-}
+enum TextFieldType {
+	TEXT,
+	FREQ
+};
+
+struct FormulaTextField : LedDisplayTextField {
+	FrankBussFormulaModule* module;
+	TextFieldType type;
+	
+	FormulaTextField() : LedDisplayTextField() {
+		bgColor = nvgRGB(0x00, 0x00, 0x00);
+	}
+	
+	void setModule(FrankBussFormulaModule* module) {
+		this->module = module;
+	}
+	
+	void setTextFieldType(TextFieldType type) {
+		this->type = type;
+	}
+	
+    void onChange(const event::Change &e) override {
+		if (module) {
+			if (type == TEXT) {
+				module->textField = getText();
+			} else if (type == FREQ) {
+				module->freqField = getText();
+			}
+			module->compile();
+		}
+	}
+	
+	void step() override {
+		LedDisplayTextField::step();
+		if (module && (module->textDirty || module->freqDirty)) {
+			if (type == TEXT) {
+				setText(module->textField);
+				module->textDirty = false;
+			} else if (type == FREQ) {
+				setText(module->freqField);
+				module->freqDirty = false;
+			}
+		}
+	}
+};
 
 struct FrankBussFormulaWidget : ModuleWidget {
+	FormulaTextField* textField;
+	FormulaTextField* freqField;
+	
 	FrankBussFormulaWidget(FrankBussFormulaModule *module) {
 		setModule(module);
 
@@ -293,19 +354,25 @@ struct FrankBussFormulaWidget : ModuleWidget {
 		addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 		addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 
-		MyTextField* textField = createWidget<MyTextField>(mm2px(Vec(3, 15)));
+		LedDisplay* textDisplay = createWidget<LedDisplay>(mm2px(Vec(3, 13)));
+		textDisplay->box.size = mm2px(Vec(85, 51));
+		addChild(textDisplay);
+		textField = createWidget<FormulaTextField>(mm2px(Vec(3, 13)));
 		textField->setModule(module);
-		textField->box.size = mm2px(Vec(85, 50));
+		textField->setTextFieldType(TEXT);
+		textField->box.size = mm2px(Vec(85, 51));
 		textField->multiline = true;
 		addChild(textField);
-		if (module) module->textField = textField;
 
-		MyTextField* freqField = createWidget<MyTextField>(mm2px(Vec(16, 68)));
+		LedDisplay* freqDisplay = createWidget<LedDisplay>(mm2px(Vec(16, 67.5)));
+		freqDisplay->box.size = mm2px(Vec(72, 10));
+		addChild(freqDisplay);
+		freqField = createWidget<FormulaTextField>(mm2px(Vec(16, 67.5)));
 		freqField->setModule(module);
+		freqField->setTextFieldType(FREQ);
 		freqField->box.size = mm2px(Vec(72, 10));
 		freqField->multiline = false;
 		addChild(freqField);
-		if (module) module->freqField = freqField;
 
 		addParam(createParam<LEDButton>(Vec(30, 260), module, FrankBussFormulaModule::B_MINUS_1_PARAM));
 		addChild(createLight<MediumLight<GreenLight>>(Vec(34.4f, 264.4f), module, FrankBussFormulaModule::B_MINUS_1_LIGHT));
@@ -318,7 +385,7 @@ struct FrankBussFormulaWidget : ModuleWidget {
 
 		addParam(createParam<RoundLargeBlackKnob>(Vec(170, 240), module, FrankBussFormulaModule::KNOB_PARAM));
 
-		addChild(createLight<MediumLight<RedLight>>(Vec(240, 240), module, FrankBussFormulaModule::BLINK_LIGHT));
+		addChild(createLight<MediumLight<GreenRedLight>>(Vec(240, 240), module, FrankBussFormulaModule::ERROR_LIGHT));
 
 		addInput(createInput<PJ301MPort>(Vec(20, 310), module, FrankBussFormulaModule::W_INPUT));
 		addInput(createInput<PJ301MPort>(Vec(60, 310), module, FrankBussFormulaModule::X_INPUT));
@@ -330,7 +397,6 @@ struct FrankBussFormulaWidget : ModuleWidget {
 
 		addOutput(createOutput<PJ301MPort>(Vec(220, 310), module, FrankBussFormulaModule::FORMULA_OUTPUT));
 	}
-
 };
 
 Model *modelFrankBussFormula = createModel<FrankBussFormulaModule, FrankBussFormulaWidget>("Formula");
